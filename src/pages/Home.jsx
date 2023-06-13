@@ -1,27 +1,173 @@
-import React from 'react'
-import logo from '../logo.svg';
+import React, { useEffect, useState } from "react";
+import { MdDelete } from "react-icons/md";
+import { FaEdit } from "react-icons/fa";
+import axios from "axios";
+// import axios from "axios";
 
 const Home = () => {
-	//  Template Code
-	return (
-		<>
-			<div className='relative bg z-0' >
-				<section className='flex-col Nunito relative z-10 h-screen w-screen overflow-hidden flex items-center justify-center'>
-					<h1 className='text-4xl text-white font-bold -mt-20 mb-20 w-[50vw] text-center'>A complete boilerplate for your next tailwind and React project!</h1>
-					<div className='flex'>
-						<div className='w-[30vw] items-center justify-center flex flex-col'>
-							<img src={logo} className="h-[20vh]" alt="" />
-							<h2 className='text-2xl font-bold text-white text-center'>ReactJs</h2>
-						</div>
-						<div className='w-[30vw] items-center justify-center flex flex-col'>
-							<img className="h-[20vh]" src="https://camo.githubusercontent.com/bcd4bda49ef6cd9537db065920f4f4f6ac670eae0e0adf2c5133c19b319f1574/68747470733a2f2f627261646c632e67616c6c65727963646e2e76736173736574732e696f2f657874656e73696f6e732f627261646c632f7673636f64652d7461696c77696e646373732f302e322e302f313535383034303536333634392f4d6963726f736f66742e56697375616c53747564696f2e53657276696365732e49636f6e732e44656661756c74" alt="" />
-							<h2 className='text-2xl font-bold text-white text-center'>TailwindCSS</h2>
-						</div>
-					</div>
-				</section>
-			</div>
-		</>
-	)
-}
+  //  Template Code
+  const [formState, setFormState] = useState("");
+  // eslint-disable-next-line
+  const [NoteCloud, setNoteCloud] = useState([]);
+  const [refresh, setrefresh] = useState(false);
 
-export default Home
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log(formState);
+    try {
+      axios("https://notes-api-backend-one.vercel.app/note/", {
+        method: "POST",
+        data: { note: formState },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+        .then((res) => {
+          setrefresh((prev) => !prev);
+          console.log(res);
+          setFormState(" ");
+        })
+        .catch((err) => console.log(err));
+      // alert("data added");
+      //   toast.success("sucessfully signup");
+    } catch (error) {
+      //   toast.error("some error");
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      axios("https://notes-api-backend-one.vercel.app/note/", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+        .then((res) => {
+          setNoteCloud(res.data);
+          console.log(res.data);
+        })
+        .catch((err) => console.log(err));
+    } catch (error) {
+      console.log(error);
+    }
+    console.log("useeffect");
+    // eslint-disable-next-line
+  }, [refresh]);
+
+  const deletedata = async (_id) => {
+    try {
+      axios(
+        `https://notes-api-backend-one.vercel.app/note/${_id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+        {
+          withCredentials: true,
+        }
+      )
+        .then((res) => {
+          console.log(res);
+          setrefresh((prev) => !prev);
+        })
+        .catch((err) => console.log(err));
+    } catch (error) {
+      console.log(error);
+    }
+    console.log(_id);
+  };
+  const updatedata = async (_id) => {
+    try {
+      axios(
+        `https://notes-api-backend-one.vercel.app/note/${_id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+        {
+          withCredentials: true,
+        }
+      )
+        .then((res) => {
+          console.log(res);
+          setrefresh((prev) => !prev);
+        })
+        .catch((err) => console.log(err));
+    } catch (error) {
+      console.log(error);
+    }
+    console.log(_id);
+    console.log("updatedata");
+  };
+
+  return (
+    <>
+      <div className="container bg-gradient-to-r from-gray-700 via-gray-900 to-black flex justify-center items-center h-max  lg:w-full lg:h-full mt-4">
+        <div className=" lg:w-[60%] lg:h-full w-[90%] h-full border-2 border-gray-200  flex flex-col  items-center lg:my-16 my-8">
+          <h1 className="text-gray-100 font-bold lg:text-5xl text-3xl mt-4 lg:mt-8 ">
+            Add Your Notes
+          </h1>
+          <form
+            action=""
+            className="bg-gray-300 lg:w-[80%]  w-[95%] lg:p-5 p-2 rounded-xl my-5"
+            onSubmit={handleSubmit}
+          >
+            <input
+              type="text"
+              id="note"
+              name="note"
+              value={formState}
+              onChange={(e) => setFormState(e.target.value)}
+              className=" rounded-xl p-2 lg:w-[80%] w-[80%] "
+            />
+            <button
+              type="submit"
+              className=" bg-blue-400 text-gray-900 lg:p-3 p-1 lg:ml-4 ml-2 rounded-lg "
+            >
+              add
+            </button>
+          </form>
+          {NoteCloud?.map((documentdata) => (
+            <div
+              className="  lg:w-[80%]  w-[90%] flex justify-center  items-center lg:my-2 my-1 "
+              key={documentdata?._id}
+            >
+              <ul className="  rounded-xl flex bg-blue-400 lg:w-[80%] w-[90%]">
+                <li className=" rounded-xl lg:p-2 p-1 flex flex-between  my-1 lg:w-[80%] w-[90%]">
+                  <div className="lg:w-[100%] w-[100%] bg-blue-200  rounded-lg">
+                    <span className=" rounded-xl lg:p-3 p-1 text-gray-900  text-center flex items-center ">
+                      {documentdata?.note}
+                    </span>
+                  </div>
+                </li>
+                <div className="btn  flex ">
+                  <button
+                    onClick={() => updatedata(documentdata._id)}
+                    className="bg-white text-black m-2 px-2 rounded-lg  "
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    onClick={() => deletedata(documentdata._id)}
+                    className="bg-white text-black m-2 px-2 rounded-lg  "
+                  >
+                    <MdDelete />{" "}
+                  </button>
+                </div>
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Home;
